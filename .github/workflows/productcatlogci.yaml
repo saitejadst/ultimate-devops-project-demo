@@ -1,8 +1,8 @@
 #name: product-catalog-ci
 
 on:
-  push:
-    branches:
+  pull_request:
+     branches:
       - main
 
 permissions:
