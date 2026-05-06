@@ -1,141 +1,413 @@
-**Note:** This project is a fork of `opentelemetry-demo`. Thanks to the team and contributors for opensourcing this wonderful demo project. Definitely one of the best on internet.
+# 🚀 Ultimate DevOps Project – End-to-End Microservices Deployment
 
-<!-- markdownlint-disable-next-line -->
-# <img src="https://opentelemetry.io/img/logos/opentelemetry-logo-nav.png" alt="OTel logo" width="45"> OpenTelemetry Demo
+## 📌 Overview
 
-[![Slack](https://img.shields.io/badge/slack-@cncf/otel/demo-brightgreen.svg?logo=slack)](https://cloud-native.slack.com/archives/C03B4CWV4DA)
-[![Version](https://img.shields.io/github/v/release/open-telemetry/opentelemetry-demo?color=blueviolet)](https://github.com/open-telemetry/opentelemetry-demo/releases)
-[![Commits](https://img.shields.io/github/commits-since/open-telemetry/opentelemetry-demo/latest?color=ff69b4&include_prereleases)](https://github.com/open-telemetry/opentelemetry-demo/graphs/commit-activity)
-[![Downloads](https://img.shields.io/docker/pulls/otel/demo)](https://hub.docker.com/r/otel/demo)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg?color=red)](https://github.com/open-telemetry/opentelemetry-demo/blob/main/LICENSE)
-[![Integration Tests](https://github.com/open-telemetry/opentelemetry-demo/actions/workflows/run-integration-tests.yml/badge.svg)](https://github.com/open-telemetry/opentelemetry-demo/actions/workflows/run-integration-tests.yml)
-[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/opentelemetry-demo)](https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-demo)
-[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9247/badge)](https://www.bestpractices.dev/en/projects/9247)
+This project demonstrates a complete **end-to-end DevOps implementation** for a microservices-based application using modern tools and best practices.
 
-## Welcome to the OpenTelemetry Astronomy Shop Demo
+It covers:
 
-This repository contains the OpenTelemetry Astronomy Shop, a microservice-based
-distributed system intended to illustrate the implementation of OpenTelemetry in
-a near real-world environment.
+* Application build (Go microservices)
+* Containerization using Docker
+* CI using GitHub Actions
+* Infrastructure provisioning using Terraform (AWS)
+* Kubernetes deployment (EKS)
+* Ingress & Load Balancing (ALB)
+* Domain setup using Route 53
+* Continuous Delivery using ArgoCD
 
-Our goals are threefold:
+---
 
-- Provide a realistic example of a distributed system that can be used to
-  demonstrate OpenTelemetry instrumentation and observability.
-- Build a base for vendors, tooling authors, and others to extend and
-  demonstrate their OpenTelemetry integrations.
-- Create a living example for OpenTelemetry contributors to use for testing new
-  versions of the API, SDK, and other components or enhancements.
+## 🏗️ Architecture
 
-We've already made [huge
-progress](https://github.com/open-telemetry/opentelemetry-demo/blob/main/CHANGELOG.md),
-and development is ongoing. We hope to represent the full feature set of
-OpenTelemetry across its languages in the future.
+* Microservices (Go-based)
+* Dockerized applications
+* AWS EKS Cluster
+* AWS ALB Ingress Controller
+* Route 53 for DNS
+* ArgoCD for GitOps deployment
 
-If you'd like to help (**which we would love**), check out our [contributing
-guidance](./CONTRIBUTING.md).
+---
 
-If you'd like to extend this demo or maintain a fork of it, read our
-[fork guidance](https://opentelemetry.io/docs/demo/forking/).
+## ⚙️ Prerequisites
 
-## Quick start
+* AWS Account
+* Docker installed
+* Terraform installed
+* kubectl configured
+* eksctl installed
+* Helm installed
+* GitHub repository
+* Domain (e.g., `devopsbysai.website`)
 
-You can be up and running with the demo in a few minutes. Check out the docs for
-your preferred deployment method:
+---
 
-- [Docker](https://opentelemetry.io/docs/demo/docker_deployment/)
-- [Kubernetes](https://opentelemetry.io/docs/demo/kubernetes_deployment/)
+## 📦 Step 1: Build Microservice Locally
 
-## Documentation
+```bash
+cd src/product-catalog
 
-For detailed documentation, see [Demo Documentation][docs]. If you're curious
-about a specific feature, the [docs landing page][docs] can point you in the
-right direction.
+export PRODUCT_CATALOG_PORT=<any-unique-port>
+go build -o product-catalog .
+```
 
-## Demos featuring the Astronomy Shop
+---
 
-We welcome any vendor to fork the project to demonstrate their services and
-adding a link below. The community is committed to maintaining the project and
-keeping it up to date for you.
+## 🐳 Step 2: Dockerize the Application
 
-|                           |                |                                  |
-|---------------------------|----------------|----------------------------------|
-| [AlibabaCloud LogService] | [Elastic]      | [OpenSearch]                     |
-| [AppDynamics]             | [Google Cloud] | [Sentry]                         |
-| [Aspecto]                 | [Grafana Labs] | [ServiceNow Cloud Observability] |
-| [Axiom]                   | [Guance]       | [Splunk]                         |
-| [Axoflow]                 | [Honeycomb.io] | [Sumo Logic]                     |
-| [Azure Data Explorer]     | [Instana]      | [TelemetryHub]                   |
-| [Coralogix]               | [Kloudfuse]    | [Teletrace]                      |
-| [Dash0]                   | [Liatrio]      | [Tracetest]                      |
-| [Datadog]                 | [Logz.io]      | [Uptrace]                        |
-| [Dynatrace]               | [New Relic]    |                                  |
+### Dockerfile (Multi-stage Build)
 
-## Contributing
+```dockerfile
+FROM golang:1.22-alpine AS builder
 
-To get involved with the project see our [CONTRIBUTING](CONTRIBUTING.md)
-documentation. Our [SIG Calls](CONTRIBUTING.md#join-a-sig-call) are every other
-Monday at 8:30 AM PST and anyone is welcome.
+WORKDIR /usr/src/app/
 
-## Project leadership
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    mkdir -p /root/.cache/go-build
 
-[Maintainers](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#maintainer)
-([@open-telemetry/demo-maintainers](https://github.com/orgs/open-telemetry/teams/demo-maintainers)):
+COPY go.mod go.sum ./
+RUN go mod download
 
-- [Juliano Costa](https://github.com/julianocosta89), Datadog
-- [Mikko Viitanen](https://github.com/mviitane), Dynatrace
-- [Pierre Tessier](https://github.com/puckpuck), Honeycomb
+COPY . .
+RUN go build -o product-catalog .
 
-[Approvers](https://github.com/open-telemetry/community/blob/main/guides/contributor/membership.md#approver)
-([@open-telemetry/demo-approvers](https://github.com/orgs/open-telemetry/teams/demo-approvers)):
+####################################
 
-- [Cedric Ziel](https://github.com/cedricziel) Grafana Labs
-- [Penghan Wang](https://github.com/wph95), AppDynamics
-- [Reiley Yang](https://github.com/reyang), Microsoft
-- [Roger Coll](https://github.com/rogercoll), Elastic
-- [Ziqi Zhao](https://github.com/fatsheep9146), Alibaba
+FROM alpine AS release
 
-Emeritus:
+WORKDIR /usr/src/app/
 
-- [Austin Parker](https://github.com/austinlparker)
-- [Carter Socha](https://github.com/cartersocha)
-- [Michael Maxwell](https://github.com/mic-max)
-- [Morgan McLean](https://github.com/mtwo)
+COPY ./products/ ./products/
+COPY --from=builder /usr/src/app/product-catalog ./
 
-### Thanks to all the people who have contributed
+ENV PRODUCT_CATALOG_PORT=8088
+ENTRYPOINT ["./product-catalog"]
+```
 
-[![contributors](https://contributors-img.web.app/image?repo=open-telemetry/opentelemetry-demo)](https://github.com/open-telemetry/opentelemetry-demo/graphs/contributors)
+---
 
-[docs]: https://opentelemetry.io/docs/demo/
+## 🏷️ Step 3: Build & Push Docker Image
 
-<!-- Links for Demos featuring the Astronomy Shop section -->
+```bash
+docker build -t saitejadst/product-catalog:v1 .
+docker push saitejadst/product-catalog:v1
+```
 
-[AlibabaCloud LogService]: https://github.com/aliyun-sls/opentelemetry-demo
-[AppDynamics]: https://www.appdynamics.com/blog/cloud/how-to-observe-opentelemetry-demo-app-in-appdynamics-cloud/
-[Aspecto]: https://github.com/aspecto-io/opentelemetry-demo
-[Axiom]: https://play.axiom.co/axiom-play-qf1k/dashboards/otel.traces.otel-demo-traces
-[Axoflow]: https://axoflow.com/opentelemetry-support-in-more-detail-in-axosyslog-and-syslog-ng/
-[Azure Data Explorer]: https://github.com/Azure/Azure-kusto-opentelemetry-demo
-[Coralogix]: https://coralogix.com/blog/configure-otel-demo-send-telemetry-data-coralogix
-[Dash0]: https://github.com/dash0hq/opentelemetry-demo
-[Datadog]: https://docs.datadoghq.com/opentelemetry/guide/otel_demo_to_datadog
-[Dynatrace]: https://www.dynatrace.com/news/blog/opentelemetry-demo-application-with-dynatrace/
-[Elastic]: https://github.com/elastic/opentelemetry-demo
-[Google Cloud]: https://github.com/GoogleCloudPlatform/opentelemetry-demo
-[Grafana Labs]: https://github.com/grafana/opentelemetry-demo
-[Guance]: https://github.com/GuanceCloud/opentelemetry-demo
-[Honeycomb.io]: https://github.com/honeycombio/opentelemetry-demo
-[Instana]: https://github.com/instana/opentelemetry-demo
-[Kloudfuse]: https://github.com/kloudfuse/opentelemetry-demo
-[Liatrio]: https://github.com/liatrio/opentelemetry-demo
-[Logz.io]: https://logz.io/learn/how-to-run-opentelemetry-demo-with-logz-io/
-[New Relic]: https://github.com/newrelic/opentelemetry-demo
-[OpenSearch]: https://github.com/opensearch-project/opentelemetry-demo
-[Sentry]: https://github.com/getsentry/opentelemetry-demo
-[ServiceNow Cloud Observability]: https://docs.lightstep.com/otel/quick-start-operator#send-data-from-the-opentelemetry-demo
-[Splunk]: https://github.com/signalfx/opentelemetry-demo
-[Sumo Logic]: https://www.sumologic.com/blog/common-opentelemetry-demo-application/
-[TelemetryHub]: https://github.com/TelemetryHub/opentelemetry-demo/tree/telemetryhub-backend
-[Teletrace]: https://github.com/teletrace/opentelemetry-demo
-[Tracetest]: https://github.com/kubeshop/opentelemetry-demo
-[Uptrace]: https://github.com/uptrace/uptrace/tree/master/example/opentelemetry-demo
+<img width="1742" height="628" alt="image" src="https://github.com/user-attachments/assets/f80267b4-d206-4efb-9cb0-badd99ea169e" />
+
+
+### Push All Images (Script)
+
+```bash
+for img in $(docker images --format "{{.Repository}}:{{.Tag}}" | grep saitejadst); do
+  docker push $img
+done
+```
+
+---
+
+## ☁️ Step 4: Terraform Backend (S3 + DynamoDB)
+
+```hcl
+provider "aws" {
+  region = "ap-south-1"
+}
+
+resource "aws_s3_bucket" "my_bucket" {
+  bucket = "saitejas3-eks-12345"
+
+  lifecycle {
+    prevent_destroy = false
+  }
+}
+
+resource "aws_dynamodb_table" "my_table" {
+  name         = "saitejas3-eks-12345"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+}
+```
+
+```bash
+terraform init
+terraform plan
+terraform apply
+```
+
+---
+
+<img width="1002" height="592" alt="image" src="https://github.com/user-attachments/assets/15021ad2-b45b-4e4f-b8e5-410a2d5777c8" />
+<img width="1675" height="562" alt="image" src="https://github.com/user-attachments/assets/2ff452f8-7955-4769-94a6-479cac3efe0a" />
+
+
+
+## 🌐 Step 5: Create EKS Cluster (Terraform Modules)
+
+After cluster creation:
+
+```bash
+aws eks update-kubeconfig --region us-west-2 --name my-eks-cluster
+kubectl get nodes
+```
+<img width="861" height="135" alt="image" src="https://github.com/user-attachments/assets/ab549d25-4a58-411a-aa9f-5918358d40a8" />
+
+
+---
+
+## ☸️ Step 6: Deploy Application to Kubernetes
+
+### Service Account
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: opentelemetry-demo
+```
+
+```bash
+kubectl apply -f serviceaccount.yaml
+kubectl get sa
+```
+
+---
+
+### Deploy Services
+
+```bash
+kubectl apply -f completedeploy.yaml
+kubectl get pods
+```
+<img width="946" height="351" alt="image" src="https://github.com/user-attachments/assets/e87bc02e-fa8b-49ed-a738-d436f4fe6133" />
+
+
+---
+
+## 🌍 Step 7: Expose Application (LoadBalancer)
+
+```bash
+kubectl edit svc opentelemetry-demo-frontendproxy
+```
+
+Change:
+
+```
+type: LoadBalancer
+```
+
+Access via external URL (port 8080)
+
+---
+<img width="1791" height="936" alt="image" src="https://github.com/user-attachments/assets/ff511393-dc99-46a4-b527-1d2c0f19bc64" />
+
+
+## 🔀 Step 8: Setup ALB Ingress Controller
+
+### IAM Policy
+
+```bash
+curl -O https://raw.githubusercontent.com/kubernetes-sigs/aws-load-balancer-controller/v2.11.0/docs/install/iam_policy.json
+
+aws iam create-policy \
+  --policy-name AWSLoadBalancerControllerIAMPolicy \
+  --policy-document file://iam_policy.json
+```
+
+### IAM Role
+
+```bash
+eksctl create iamserviceaccount \
+  --cluster=<cluster-name> \
+  --namespace=kube-system \
+  --name=aws-load-balancer-controller \
+  --role-name AmazonEKSLoadBalancerControllerRole \
+  --attach-policy-arn=arn:aws:iam::<account-id>:policy/AWSLoadBalancerControllerIAMPolicy \
+  --approve
+```
+
+### Install via Helm
+
+```bash
+helm repo add eks https://aws.github.io/eks-charts
+helm repo update eks
+
+helm install aws-load-balancer-controller eks/aws-load-balancer-controller \
+  -n kube-system \
+  --set clusterName=<cluster-name> \
+  --set serviceAccount.create=false \
+  --set serviceAccount.name=aws-load-balancer-controller \
+  --set region=<region> \
+  --set vpcId=<vpc-id>
+```
+
+---
+
+## 🌐 Step 9: Ingress Configuration
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-proxy
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+spec:
+  ingressClassName: alb
+  rules:
+    - host: devopsbysai.website
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: opentelemetry-demo-frontendproxy
+                port:
+                  number: 8080
+```
+
+```bash
+kubectl apply -f ingress.yaml
+kubectl get ing
+```
+<img width="1227" height="176" alt="image" src="https://github.com/user-attachments/assets/37b07ba1-8b19-4149-93dd-8b004b0088f2" />
+
+
+---
+
+## 🌍 Step 10: Domain Setup (Route 53)
+
+* Create Hosted Zone: `devopsbysai.website`
+* Update nameservers at domain provider
+* Create A (Alias) → ALB
+
+⏳ Wait 1–48 hours for DNS propagation
+
+---
+
+## 🔄 Step 11: CI Pipeline (GitHub Actions)
+
+Pipeline stages:
+
+* Build
+* Test
+* Code Quality
+* Docker Build & Push
+* Update Kubernetes Manifest
+
+```yaml
+on:
+  pull_request:
+    branches:
+      - main
+complete file can be found here https://github.com/saitejadst/ultimate-devops-project-demo/blob/main/.github/workflows/productcatlogci.yaml
+```
+
+Key features:
+
+* Builds Go app
+* Runs tests
+* Pushes Docker image
+* Updates deployment YAML with new image tag
+
+  <img width="1232" height="460" alt="image" src="https://github.com/user-attachments/assets/0312ed9c-e5da-4d2f-86ef-4fe4d990cd7f" />
+
+
+---
+
+## 🚀 Step 12: CD using ArgoCD
+
+### Install ArgoCD
+
+```bash
+kubectl create namespace argocd
+```
+
+Follow official docs:
+https://argo-cd.readthedocs.io/en/stable/
+
+---
+
+### Access ArgoCD
+
+```bash
+kubectl get svc -n argocd
+```
+
+---
+
+### Get Password
+
+```bash
+kubectl get secrets -n argocd
+kubectl edit secret argocd-initial-admin-secret -n argocd
+echo <password> | base64 --decode
+```
+
+Login:
+
+* Username: `admin`
+* Password: decoded value
+
+---
+
+### Deploy via ArgoCD
+
+* Connect GitHub repo
+* Select path: `kubernetes/productcatalog`
+* Enable auto-sync
+
+---
+
+## 🔄 Step 13: GitOps Flow
+
+1. Raise PR
+2. CI pipeline updates image tag
+3. Merge to main
+4. ArgoCD detects change
+5. Auto-sync deploys to Kubernetes
+
+<img width="1586" height="746" alt="image" src="https://github.com/user-attachments/assets/8e738b5e-8b10-41cd-b235-98a984bb0db2" />
+<img width="1142" height="821" alt="image" src="https://github.com/user-attachments/assets/ab4d9f70-59b9-41ca-b80f-6b6646d96ca1" />
+<img width="1642" height="802" alt="image" src="https://github.com/user-attachments/assets/a6582d6b-1ffb-4255-834a-82ff638c4c05" />
+
+
+
+---
+
+## ✅ Final Outcome
+
+* Microservices deployed on EKS
+* Accessible via domain:
+
+  ```
+  http://www.devopsbysai.website
+  ```
+* CI/CD fully automated
+* GitOps workflow implemented
+
+---
+
+## 🧠 Key Learnings
+
+* Multi-stage Docker builds
+* Terraform remote backend (S3 + DynamoDB)
+* EKS cluster provisioning
+* ALB Ingress Controller setup
+* Route 53 DNS management
+* GitHub Actions CI pipeline
+* ArgoCD GitOps deployment
+
+---
+
+## 📌 Author
+
+**Saiteja Dosapati**
+
+---
